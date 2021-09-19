@@ -1,49 +1,10 @@
 import requests
-import pandas as pd
-from bs4 import BeautifulSoup
-from urllib.request import urlopen
 import json
-import pprint
 import time
 import random
-
 import numpy as np
 
-# send_proxies = {
-#     'http':'0.0.0.0:80',
-#     'https':'0.0.0.0:80',
-# }
-# url = 'https://www.azlyrics.com/lyrics/taylorswift/dropsofjupiter.html'
-# response = requests.get(url , proxies=send_proxies)
-# if response.status_code == response.codes.ok:
-#   print('Everyhing Is Working...')
-
-# header = {
-#     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36" ,
-#     'referer':'https://www.google.com/'
-# }
-
-# result = requests.get("https://us.tamrieltradecentre.com/pc/Trade/SearchResult?SearchType=Sell&ItemID=18043&ItemNamePattern=Zircon+Grains&ItemCategory1ID=&ItemTraitID=&ItemQualityID=&IsChampionPoint=false&LevelMin=&LevelMax=&MasterWritVoucherMin=&MasterWritVoucherMax=&AmountMin=&AmountMax=&PriceMin=&PriceMax=4700", headers=header)
-
-# # 200 is accessible
-# # verifying accessiblity, used for debugging
-# print(result.status_code)
-
-# src = result.content
-# # print(src)
-
-# soup = BeautifulSoup(src, "lxml")
-# f = open("testfile.txt", "w", encoding="utf-8")
-# f.write(soup.prettify())
-# f.close()
-
-# locations = []
-# prices = []
-
-# for tr_tag in soup.find_all("tr"):
-#     print(tr_tag)
-
-
+# dictionary of locations
 GuildKioskLocation = {
     0: "Belkarth",
     1: "BelkarthOutlawRefuge",
@@ -145,17 +106,13 @@ GuildKioskLocation = {
     97: "MarkarthOutlawRefuge"
 }
 
-
-def urlAndCaptcha(url, key):
-    tempurl = url.replace("/pc/", "/api/pc/")
-    tempurl = tempurl.replace("SearchResult?", "Search?")
-    return tempurl + "&V3ReCaptchaToken=" + key
-
+# Parses the url to directly hit the api for TTC
 def urlAndCaptchas(url, keys):
     tempurl = url.replace("/pc/", "/api/pc/")
     tempurl = tempurl.replace("SearchResult?", "Search?")
     return tempurl + "&V3ReCaptchaToken=" + keys[random.randint(0,4)]
 
+# Get a random user-agent to attempt to simulate different machines
 def get_random_ua():
     random_ua = ''
     ua_file = 'ua_file.txt'
@@ -173,7 +130,7 @@ def get_random_ua():
     finally:
         return random_ua
 
-# captcha_key = "03AGdBq250cFSnm9F8cGo66OGjbg21AssTgrImFskTYv34hf-MOmB7EZyUOqoNv2zvr8Jf7rYWvt3tYgkMdvhqsxyXGbLcawcgO6qaDOfOqLzt70hJeHZhQFUPV-oI2AgjYF6N0qkrWYvvSVFlS0ccGNllokAs2Zu2e49n3diLtdDC-mFoGBBWzki0fXarv1y-mW5LEr9JgVwRRGTqgeOPpe5EpVDsKKAmaSmoLKJTmj5Hvb33uuyb_C365jj0W1Jqb13SbxNx3xp1XHvon1Zr4bxpeY5qwnzL6Wb5t_7wRw_5vmGE_tr2YvcZpTM31_QuvLOPsVmPin4enpylFNQ3HyZKYVQiF0Jqi2fvSMT7DsgYwXKHNkH2HrZXzrCBLCQtgKYV1TgkUZRvKm9EQns7ZZNnqL5NkwpZdtFuNHHRC8A0J5h2xJejcKFEHbCYg7RxoEP3pU_gxXqT"
+# Give multiple captcha keys to randomly alternate until one gets invalid
 captcha_key ="03AGdBq24TGnj6HEdmdqCgCu3m3prj-ZqJ5mBQXObT1YQF5t2VnBDvk9tBHF7Ye5J_F7Btj-7t7F30yKjdQ5-H0Ve7afGGi1Sq_EnIUueM-SP1k5q44dak5ezsnF-HyGXaS7HG2IZhBGHSNVLWiPd-TDIBZLBie9jweglD26i8T8ZQR8--wNhlJQ0oIV0BlwEfH2nDwiDjNmvz-bWaHb9r_WhCjgKq-LHkExs6sV3DSy1-sc1zEvAK4O4n0ZdxsjFnqLMUmbeY1ythFGiDJOsFbsFkhwIoR3h8Ru4ttM0f_QoIRE7QMgs5hQgJDBoWzv4TLB69U-CvEoFMQj8XvWJBQypIS4BWJpIsR4zCz8AREQixeOznxcqsTHs8eRC5eIPX8rp-_CaBztKsJhVtWMvae-S8yqY1hTl8yRsHL09n33uz218UOD2i_FrMcdSvBOCqYaL1yr1Mho4ceKuKMXSKjXo9qv7ngkaUmg"
 captcha_keys = [
     "03AGdBq26FPEzrFESFQYHvhdczB7trum_3Q3uCeUD_-4wFwjihYIgfLSVrreLrUr4janv1gUfBjq0S72x7J5ws1XrSrvWjw0TRHZvRVuhYYqm1sD0MyNos9W_ua8HUIHPvrlXS-8U7S-51iT5b5JrtWhW4pSRiMemzbMxMrtrJJuzBUBpsOz89cz_LGKf0VcMgFrxbonV6TEcBwK0r5GH7RDzDTfubvsQBbqvCaknjsCblNb4cP5e__xPqZZWGUq0UhlWW7Dpaf-gMAEjlqBKu2X6iijiISkf7GqS_PHuxkz-N660PqOea6gqK_ST85Xkw3-DsXEHGLimya_zz0PFKhyNLP2rc2lxUnZQPGHIPnneBsCiCVJdO0LzKvGrLyyvBpfbxLG-9c2HyV82yV6QxrwF-rF5Xsz9szAdRO3EnwEfGtgODCQR-y1F7ae9wj12EmR4mFPr_BobOMnoSPZuyiRuNu100SJdFtg",
@@ -183,10 +140,10 @@ captcha_keys = [
     "03AGdBq266hx2luABKsojm9rZ8iBxFC0T0km-8jtl_0M0yucKk0fGDR-vKVODDeAdpTQkmcAVX5PZO2U7_nf2aZuc5iy36yxs-je_X_6C3XBj_nVw2tRcf-m7mP6JucVuldCflKcoR-xJN8bJ4u9RyLe5XCbWbAdSctKdizAmueisQ9RgEPomQ8VRQC5QJpz5K8S4F2HWI6OdBvxhdQ5mj19NpRi9fH7uwSdgmtsRvAGQtAUfG4_Gpcl8gxxsAhyQs-wFauqbjpCT-YcyJKuIkc_n77W1h4f7PoSrFC_6U4GKRIWvBLSIs-84jOfnQ3ll6lWO2W_L_raLypU1puvLk6xpICPBrQB5tpiogHjKECXFIjfIDWYaXZ1U8cFxoDjsgZLWnMHtJrl7FHKzfLVszlkLlognlIo_BrqmqgENGk6DTElcS2l4J3boFl8bxNCjEf6nDNWsaFcTyX_0YaODEONDBsWsfzYJwLg"
     ]
 
-# url = "https://us.tamrieltradecentre.com/api/pc/Trade/Search?SearchType=Sell&ItemID=211&ItemNamePattern=Dreugh+Wax&ItemCategory1ID=&ItemTraitID=&ItemQualityID=&IsChampionPoint=false&LevelMin=&LevelMax=&MasterWritVoucherMin=&MasterWritVoucherMax=&AmountMin=&AmountMax=&PriceMin=&PriceMax=10000"
+# Update with own url's to search
 url = "https://us.tamrieltradecentre.com/pc/Trade/SearchResult?SearchType=Sell&ItemID=10454&ItemNamePattern=&ItemCategory1ID=&ItemTraitID=&ItemQualityID=&IsChampionPoint=false&LevelMin=&LevelMax=&MasterWritVoucherMin=&MasterWritVoucherMax=&AmountMin=&AmountMax=&PriceMin=&PriceMax=90000"
-# print(urlAndCaptcha(url, captcha_key))
 
+# Build request header
 user_agent = get_random_ua()
 send_header = {
     'accept': 'application/json',
@@ -196,20 +153,13 @@ send_header = {
     'user-agent': user_agent
     }
 
+# Should change, loop every 2 minutes to search for new options
 while True:
-    # uclient = urlopen(urlAndCaptcha(url, captcha_key))
-
-    # uclient = urlopen(urlAndCaptchas(url, captcha_keys))
-    # page_html = uclient.read()
-    # uclient.close()
-
     result = requests.get(urlAndCaptchas(url, captcha_keys), headers=send_header)
     page_html = result.content
     send_header['user-agent'] = get_random_ua()
 
     curr_time = int(time.time())
-    # page_soup = BeautifulSoup(page_html, "html.parser")
-    # print(page_html)
 
     searchJson = json.loads(page_html)
 
@@ -218,12 +168,6 @@ while True:
         print("SEARCH FAILED... SOLVE THE CAPTCHA IN YOUR BROWSER")
     else:
         searchObjList = searchJson["TradeListPageModel"]["TradeDetails"]
-
-        # Printing Testing
-        # pp = pprint.PrettyPrinter(indent=4)
-        # pp.pprint(searchJson)
-        # print(searchObjList[0]["DiscoverUnixTime"])
-        # print(curr_time)
         
         for searchObj in searchObjList:
             # Currently a little lax which may cause repeats
